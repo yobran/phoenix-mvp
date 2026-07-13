@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum PaymentStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum RaffleStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+}
+
+model User {
+  id            String   @id @default(cuid())
+  fullName      String
+  phone         String   @unique
+  email         String?  @unique
+  referralCode  String   @unique
+  role          UserRole @default(USER)
+  createdAt     DateTime @default(now())
+
+  tickets       Ticket[]
+  payments      Payment[]
+}
+
+model Raffle {
+  id            String        @id @default(cuid())
+  title         String
+  prize         String
+  ticketPrice   Float
+  totalTickets  Int
+  soldTickets   Int           @default(0)
+  drawDate      DateTime
+  status        RaffleStatus  @default(DRAFT)
+
+  tickets       Ticket[]
+}
+
+model Ticket {
+  id             String   @id @default(cuid())
+  ticketNumber   String   @unique
+
+  userId         String
+  raffleId       String
+
+  user           User     @relation(fields: [userId], references: [id])
+  raffle         Raffle   @relation(fields: [raffleId], references: [id])
+
+  payment        Payment?
+}
+
+model Payment {
+  id              String          @id @default(cuid())
+  amount          Float
+  mpesaReference  String          @unique
+  status          PaymentStatus   @default(PENDING)
+
+  userId          String
+  ticketId        String          @unique
+
+  user            User            @relation(fields: [userId], references: [id])
+  ticket          Ticket          @relation(fields: [ticketId], references: [id])
+
+  createdAt       DateTime        @default(now())
+}
