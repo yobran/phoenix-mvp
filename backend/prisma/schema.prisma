@@ -43,17 +43,23 @@ model User {
 
 model Raffle {
   id            String        @id @default(cuid())
+
   title         String
+  description   String
   prize         String
+
   ticketPrice   Float
   totalTickets  Int
   soldTickets   Int           @default(0)
+
   drawDate      DateTime
   status        RaffleStatus  @default(DRAFT)
 
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
   tickets       Ticket[]
 }
-
 model Ticket {
   id             String   @id @default(cuid())
   ticketNumber   String   @unique
