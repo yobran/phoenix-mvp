@@ -1,17 +1,23 @@
 import {
   Injectable,
   BadRequestException,
+  UnauthorizedException,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   async register(dto: RegisterDto) {
-    // Check phone
     const existingPhone = await this.prisma.user.findUnique({
       where: { phone: dto.phone },
     });
@@ -20,7 +26,6 @@ export class AuthService {
       throw new BadRequestException('Phone number already registered');
     }
 
-    // Check email
     if (dto.email) {
       const existingEmail = await this.prisma.user.findUnique({
         where: { email: dto.email },
@@ -31,16 +36,13 @@ export class AuthService {
       }
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
-    // Generate referral code
     const referralCode = Math.random()
       .toString(36)
       .substring(2, 10)
       .toUpperCase();
 
-    // Create user
     const user = await this.prisma.user.create({
       data: {
         fullName: dto.fullName,
@@ -51,8 +53,47 @@ export class AuthService {
       },
     });
 
-    // Remove password before returning
     const { password, ...result } = user;
     return result;
+  }
+
+  async login(dto: LoginDto) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        phone: dto.phone,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const passwordMatches = await bcrypt.compare(
+      dto.password,
+      user.password,
+    );
+
+    if (!passwordMatches) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const accessToken = await this.jwtService.signAsync({
+      sub: user.id,
+      phone: user.phone,
+      role: user.role,
+    });
+
+    return {
+      accessToken,
+      user: {
+        id: user.id,
+        fullName: user.fullName,
+        phone: user.phone,
+        email: user.email,
+        role: user.role,
+        referralCode: user.referralCode,
+        isVerified: user.isVerified,
+      },
+    };
   }
 }
