@@ -31,10 +31,11 @@ model User {
   email        String?   @unique
   referralCode String?   @unique
   role         UserRole  @default(USER)
-  createdAt    DateTime  @default(now())
 
   password     String
   isVerified   Boolean   @default(false)
+
+  createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
   tickets      Ticket[]
@@ -59,7 +60,9 @@ model Raffle {
   updatedAt     DateTime      @updatedAt
 
   tickets       Ticket[]
+  payments      Payment[]
 }
+
 model Ticket {
   id             String   @id @default(cuid())
   ticketNumber   String   @unique
@@ -75,15 +78,19 @@ model Ticket {
 
 model Payment {
   id              String          @id @default(cuid())
+
   amount          Float
-  mpesaReference  String          @unique
+  mpesaReference  String?         @unique
+
   status          PaymentStatus   @default(PENDING)
 
   userId          String
   ticketId        String          @unique
+  raffleId        String
 
   user            User            @relation(fields: [userId], references: [id])
   ticket          Ticket          @relation(fields: [ticketId], references: [id])
+  raffle          Raffle          @relation(fields: [raffleId], references: [id])
 
   createdAt       DateTime        @default(now())
 }
