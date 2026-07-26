@@ -30,28 +30,29 @@ export class PaymentsService {
   }
 
   async submitTransactionCode(
-    id: string,
+    paymentId: string,
     userId: string,
     dto: SubmitTransactionDto,
   ) {
-    const payment = await this.prisma.payment.findUnique({
-      where: { id },
+    const payment = await this.prisma.payment.findFirst({
+      where: {
+        id: paymentId,
+        userId,
+      },
     });
 
     if (!payment) {
       throw new NotFoundException('Payment not found');
     }
 
-    if (payment.userId !== userId) {
-      throw new BadRequestException('You do not own this payment');
-    }
-
-    if (payment.status !== 'PENDING') {
-      throw new BadRequestException('Payment is no longer pending');
+    if (payment.transactionCode) {
+      throw new BadRequestException(
+        'Transaction code already submitted',
+      );
     }
 
     return this.prisma.payment.update({
-      where: { id },
+      where: { id: paymentId },
       data: {
         transactionCode: dto.transactionCode,
       },
@@ -62,9 +63,6 @@ export class PaymentsService {
     return this.prisma.payment.findMany({
       where: {
         status: 'PENDING',
-        transactionCode: {
-          not: null,
-        },
       },
       include: {
         user: true,
@@ -72,20 +70,19 @@ export class PaymentsService {
         raffle: true,
       },
       orderBy: {
-        createdAt: 'asc',
+        createdAt: 'desc',
       },
     });
   }
 
   async verifyPayment(
-    id: string,
+    paymentId: string,
     adminId: string,
     dto: VerifyPaymentDto,
   ) {
     const payment = await this.prisma.payment.findUnique({
-      where: { id },
-      include: {
-        ticket: true,
+      where: {
+        id: paymentId,
       },
     });
 
@@ -93,36 +90,15 @@ export class PaymentsService {
       throw new NotFoundException('Payment not found');
     }
 
-    if (payment.status !== 'PENDING') {
-      throw new BadRequestException('Payment already processed');
-    }
-
-    if (dto.status !== 'VERIFIED' && dto.status !== 'REJECTED') {
-      throw new BadRequestException('Invalid payment status');
-    }
-
-    return this.prisma.$transaction(async (tx) => {
-      const updatedPayment = await tx.payment.update({
-        where: { id },
-        data: {
-          status: dto.status,
-          verifiedAt:
-            dto.status === 'VERIFIED' ? new Date() : null,
-          verifiedBy:
-            dto.status === 'VERIFIED' ? adminId : null,
-        },
-      });
-
-      if (dto.status === 'VERIFIED') {
-        await tx.ticket.update({
-          where: { id: payment.ticket.id },
-          data: {
-            status: 'SOLD',
-          },
-        });
-      }
-
-      return updatedPayment;
+    return this.prisma.payment.update({
+      where: {
+        id: paymentId,
+      },
+      data: {
+        status: dto.status,
+        verifiedAt: new Date(),
+        verifiedBy: adminId,
+      },
     });
   }
 }

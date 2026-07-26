@@ -48,6 +48,15 @@ export class TicketsService {
         },
       });
 
+      await tx.raffle.update({
+        where: { id: raffleId },
+        data: {
+          soldTickets: {
+            increment: 1,
+          },
+        },
+      });
+
       return { ticket, payment };
     });
 
