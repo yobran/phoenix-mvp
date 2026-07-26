@@ -121,6 +121,16 @@ export class PaymentsService {
           },
         });
       }
+      await tx.raffle.update({
+  where: {
+    id: payment.ticket.raffleId,
+  },
+  data: {
+    soldTickets: {
+      increment: 1,
+    },
+  },
+});
 
       return updatedPayment;
     });
