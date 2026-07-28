@@ -1,7 +1,15 @@
-import { IsString, Length } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class SubmitTransactionDto {
   @IsString()
-  @Length(8, 20)
-  transactionCode!: string;
+  @MinLength(3)
+  paymentMessage!: string;
+
+  @IsOptional()
+  @IsString()
+  transactionCode?: string;
 }

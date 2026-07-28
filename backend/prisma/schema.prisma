@@ -16,6 +16,7 @@ enum PaymentStatus {
   PENDING
   VERIFIED
   REJECTED
+  EXPIRED
 }
 
 enum RaffleStatus {
@@ -60,6 +61,7 @@ model Raffle {
   title       String
   description String
   prize       String
+  imageUrl String?
 
   ticketPrice  Float
   totalTickets Int
@@ -113,9 +115,12 @@ model Payment {
 
   mpesaReference  String? @unique
   transactionCode String? @unique
+  paymentMessage  String?
 
   status        PaymentStatus @default(PENDING)
   paymentMethod PaymentMethod @default(MANUAL)
+
+  expiresAt DateTime?
 
   userId   String
   ticketId String @unique

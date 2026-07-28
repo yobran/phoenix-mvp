@@ -25,11 +25,12 @@ export class WinnersService {
       );
     }
 
-    const existingWinner = await this.prisma.winner.findUnique({
-      where: {
-        raffleId,
-      },
-    });
+    const existingWinner =
+      await this.prisma.winner.findUnique({
+        where: {
+          raffleId,
+        },
+      });
 
     if (existingWinner) {
       throw new BadRequestException(
@@ -37,16 +38,17 @@ export class WinnersService {
       );
     }
 
-    const verifiedPayments = await this.prisma.payment.findMany({
-      where: {
-        raffleId,
-        status: 'VERIFIED',
-      },
-      include: {
-        user: true,
-        ticket: true,
-      },
-    });
+    const verifiedPayments =
+      await this.prisma.payment.findMany({
+        where: {
+          raffleId,
+          status: 'VERIFIED',
+        },
+        include: {
+          user: true,
+          ticket: true,
+        },
+      });
 
     if (verifiedPayments.length === 0) {
       throw new BadRequestException(
@@ -56,29 +58,33 @@ export class WinnersService {
 
     const randomWinner =
       verifiedPayments[
-        Math.floor(Math.random() * verifiedPayments.length)
+        Math.floor(
+          Math.random() * verifiedPayments.length,
+        )
       ];
 
-    const winner = await this.prisma.$transaction(async (tx) => {
-      const created = await tx.winner.create({
-        data: {
-          raffleId,
-          ticketId: randomWinner.ticketId,
-          userId: randomWinner.userId,
-        },
-      });
+    const winner = await this.prisma.$transaction(
+      async (tx) => {
+        const created = await tx.winner.create({
+          data: {
+            raffleId,
+            ticketId: randomWinner.ticketId,
+            userId: randomWinner.userId,
+          },
+        });
 
-      await tx.raffle.update({
-        where: {
-          id: raffleId,
-        },
-        data: {
-          status: 'COMPLETED',
-        },
-      });
+        await tx.raffle.update({
+          where: {
+            id: raffleId,
+          },
+          data: {
+            status: 'COMPLETED',
+          },
+        });
 
-      return created;
-    });
+        return created;
+      },
+    );
 
     return this.prisma.winner.findUnique({
       where: {
@@ -87,7 +93,15 @@ export class WinnersService {
       include: {
         raffle: true,
         ticket: true,
-        user: true,
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            phone: true,
+            email: true,
+            referralCode: true,
+          },
+        },
       },
     });
   }
@@ -100,7 +114,15 @@ export class WinnersService {
       include: {
         raffle: true,
         ticket: true,
-        user: true,
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            phone: true,
+            email: true,
+            referralCode: true,
+          },
+        },
       },
     });
   }
@@ -110,7 +132,15 @@ export class WinnersService {
       include: {
         raffle: true,
         ticket: true,
-        user: true,
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            phone: true,
+            email: true,
+            referralCode: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',

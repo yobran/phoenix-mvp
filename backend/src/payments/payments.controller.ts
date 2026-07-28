@@ -23,8 +23,16 @@ export class PaymentsController {
   ) {}
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.paymentsService.findPayment(id);
+  @UseGuards(JwtAuthGuard)
+  findOne(
+    @Param('id') id: string,
+    @Req() req: any,
+  ) {
+    return this.paymentsService.findPayment(
+      id,
+      req.user.userId,
+      req.user.role,
+    );
   }
 
   @Post(':id/submit-code')
