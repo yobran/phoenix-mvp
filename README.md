@@ -1,19 +1,93 @@
 # Phoenix MVP
 
-Phoenix MVP is the first software product developed by Alva Technologies.
+Phoenix is a digital raffle and giveaway platform built with NestJS, Prisma, PostgreSQL and React.
 
-## Vision
+## Features
 
-Build a modern, transparent, and engaging digital raffle platform that allows organizers to create raffles, users to purchase tickets, and winners to be selected fairly.
+- User Registration & Login
+- JWT Authentication
+- Admin Dashboard
+- Create Raffles
+- Activate / Complete Raffles
+- Ticket Reservation
+- Manual Payment Verification
+- Payment Expiry
+- Winners Page
+- Random Winner Selection
+- Protected Admin APIs
 
-## Technology Stack
+---
 
-- Frontend: Next.js + TypeScript
-- Backend: NestJS + TypeScript
-- Database: PostgreSQL
-- ORM: Prisma
-- Containerization: Docker
+## Tech Stack
 
-## Status
+Backend
 
-🚧 Under active development.
+- NestJS
+- Prisma ORM
+- PostgreSQL
+- JWT
+- TypeScript
+
+Frontend
+
+- React
+- React Router
+- Axios
+- Vite
+- TypeScript
+
+---
+
+## Current Flow
+
+User
+
+Register
+
+↓
+
+Login
+
+↓
+
+Reserve Ticket
+
+↓
+
+Submit M-Pesa Message
+
+↓
+
+Admin Verifies Payment
+
+↓
+
+Ticket Confirmed
+
+↓
+
+Winner Draw
+
+↓
+
+Winner Published
+
+---
+
+## Planned Features
+
+- STK Push
+- SMS Notifications
+- WhatsApp Notifications
+- Image Uploads
+- Referral Rewards
+- Analytics Dashboard
+- Mobile App
+- Organizer Portal
+
+---
+
+## Author
+
+Brian Kipkirui
+Applied Computer Science

@@ -1,9 +1,18 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { getToken, logout } from '../api/auth';
+import {
+  getToken,
+  getUser,
+  logout,
+} from '../api/auth';
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const isLoggedIn = Boolean(getToken());
+
+  const token = getToken();
+  const user = getUser();
+
+  const isLoggedIn = Boolean(token);
+  const isAdmin = user?.role === 'ADMIN';
 
   function handleLogout() {
     logout();
@@ -20,19 +29,48 @@ export default function Navbar() {
         <Link className="nav-link" to="/">
           Raffles
         </Link>
+        <Link className="nav-link" to="/winners">
+  Winners
+</Link>
+
+        {isLoggedIn && !isAdmin && (
+          <Link
+            className="nav-link"
+            to="/my-tickets"
+          >
+            My Tickets
+          </Link>
+        )}
+{isAdmin && (
+  <>
+    <Link
+      className="nav-link"
+      to="/admin/dashboard"
+    >
+      Dashboard
+    </Link>
+
+    <Link
+      className="nav-link"
+      to="/admin/payments"
+    >
+      Admin Payments
+    </Link>
+  </>
+)}
 
         {isLoggedIn ? (
-          <>
-            <Link className="nav-link" to="/my-tickets">
-              My Tickets
-            </Link>
-
-            <button className="nav-button" onClick={handleLogout}>
-              Logout
-            </button>
-          </>
+          <button
+            className="nav-button"
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
         ) : (
-          <Link className="nav-link" to="/login">
+          <Link
+            className="nav-link"
+            to="/login"
+          >
             Login
           </Link>
         )}

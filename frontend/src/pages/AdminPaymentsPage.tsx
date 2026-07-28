@@ -20,6 +20,7 @@ interface Payment {
   id: string;
   amount: number;
   transactionCode: string | null;
+  paymentMessage: string | null;
   status: string;
   createdAt: string;
   user: User;
@@ -60,6 +61,17 @@ export default function AdminPaymentsPage() {
     paymentId: string,
     status: 'VERIFIED' | 'REJECTED',
   ) {
+    const action =
+      status === 'VERIFIED'
+        ? 'verify this payment'
+        : 'reject this payment';
+
+    const confirmed = window.confirm(
+      `Are you sure you want to ${action}?`,
+    );
+
+    if (!confirmed) return;
+
     try {
       setProcessingId(paymentId);
       setError('');
@@ -73,11 +85,32 @@ export default function AdminPaymentsPage() {
           (payment) => payment.id !== paymentId,
         ),
       );
-    } catch {
-      setError('Failed to process payment.');
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message ||
+          'Failed to process payment.',
+      );
     } finally {
       setProcessingId('');
     }
+  }
+
+  function getPhoneNumber(phone: string) {
+    return phone.replace(/\s+/g, '');
+  }
+
+  function getWhatsAppLink(phone: string) {
+    let cleanedPhone = getPhoneNumber(phone);
+
+    if (cleanedPhone.startsWith('0')) {
+      cleanedPhone = `254${cleanedPhone.substring(1)}`;
+    }
+
+    if (cleanedPhone.startsWith('+')) {
+      cleanedPhone = cleanedPhone.substring(1);
+    }
+
+    return `https://wa.me/${cleanedPhone}`;
   }
 
   if (loading) {
@@ -93,13 +126,15 @@ export default function AdminPaymentsPage() {
   return (
     <main className="page-container">
       <section className="page-heading">
-        <span className="eyebrow">Administration</span>
+        <span className="eyebrow">
+          Administration
+        </span>
 
         <h1>Payment Verification</h1>
 
         <p>
-          Review submitted M-Pesa transaction codes and verify
-          legitimate payments.
+          Review payment proof and manually verify legitimate
+          payments.
         </p>
       </section>
 
@@ -129,12 +164,12 @@ export default function AdminPaymentsPage() {
               <div className="admin-payment-header">
                 <div>
                   <span className="ticket-label">
-                    Transaction code
+                    Payment proof
                   </span>
 
                   <h2>
                     {payment.transactionCode ||
-                      'Not submitted'}
+                      'Full message submitted'}
                   </h2>
                 </div>
 
@@ -203,6 +238,40 @@ export default function AdminPaymentsPage() {
                       ).toLocaleString()}
                     </span>
                   </div>
+                </div>
+
+                <div className="payment-proof-box">
+                  <span className="admin-label">
+                    Submitted M-Pesa Message / Payment Proof
+                  </span>
+
+                  <p>
+                    {payment.paymentMessage ||
+                      payment.transactionCode ||
+                      'No payment proof submitted'}
+                  </p>
+                </div>
+
+                <div className="admin-contact-actions">
+                  <a
+                    className="secondary-button"
+                    href={`tel:${getPhoneNumber(
+                      payment.user.phone,
+                    )}`}
+                  >
+                    📞 Call Customer
+                  </a>
+
+                  <a
+                    className="secondary-button"
+                    href={getWhatsAppLink(
+                      payment.user.phone,
+                    )}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    💬 WhatsApp Customer
+                  </a>
                 </div>
 
                 <div className="admin-payment-actions">

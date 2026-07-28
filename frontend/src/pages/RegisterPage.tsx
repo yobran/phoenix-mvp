@@ -6,9 +6,11 @@ import { register } from '../api/auth';
 export default function RegisterPage() {
   const navigate = useNavigate();
 
-  const [name, setName] = useState('');
+  const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -20,14 +22,17 @@ export default function RegisterPage() {
 
     try {
       await register({
-        name,
+        fullName,
         phone,
+        email: email || undefined,
         password,
       });
 
       navigate('/login');
     } catch {
-      setError('Registration failed. Please check your details.');
+      setError(
+        'Registration failed. The phone number or email may already be registered.',
+      );
     } finally {
       setLoading(false);
     }
@@ -39,61 +44,98 @@ export default function RegisterPage() {
         ← Back to Phoenix
       </Link>
 
-      <div className="auth-card">
+      <section className="auth-card">
         <span className="eyebrow">Join Phoenix</span>
 
-        <h1>Create your account</h1>
+        <h1>Create account</h1>
 
         <p className="auth-description">
-          Create an account to enter raffles and track your tickets.
+          Create your account and start entering Phoenix raffles.
         </p>
 
-        <form className="auth-form" onSubmit={handleSubmit}>
+        <form
+          className="auth-form"
+          onSubmit={handleSubmit}
+        >
           <label>
             Full name
+
             <input
               type="text"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="Brian Kipkirui"
+              value={fullName}
+              onChange={(event) =>
+                setFullName(event.target.value)
+              }
+              placeholder="John Doe"
               required
             />
           </label>
 
           <label>
             Phone number
+
             <input
-              type="tel"
+              type="text"
               value={phone}
-              onChange={(event) => setPhone(event.target.value)}
+              onChange={(event) =>
+                setPhone(event.target.value)
+              }
               placeholder="0700000001"
               required
             />
           </label>
 
           <label>
-            Password
+            Email address
+
             <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="At least 8 characters"
-              minLength={8}
-              required
+              type="email"
+              value={email}
+              onChange={(event) =>
+                setEmail(event.target.value)
+              }
+              placeholder="you@example.com"
             />
           </label>
 
-          {error && <p className="form-error">{error}</p>}
+          <label>
+            Password
 
-          <button className="primary-button" type="submit" disabled={loading}>
-            {loading ? 'Creating account...' : 'Create account'}
+            <input
+              type="password"
+              value={password}
+              onChange={(event) =>
+                setPassword(event.target.value)
+              }
+              required
+              minLength={6}
+            />
+          </label>
+
+          {error && (
+            <p className="form-error">
+              {error}
+            </p>
+          )}
+
+          <button
+            className="primary-button"
+            type="submit"
+            disabled={loading}
+          >
+            {loading
+              ? 'Creating account...'
+              : 'Create account'}
           </button>
         </form>
 
         <p className="auth-footer">
-          Already have an account? <Link to="/login">Login</Link>
+          Already have an account?{' '}
+          <Link to="/login">
+            Login
+          </Link>
         </p>
-      </div>
+      </section>
     </main>
   );
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { login, saveToken } from '../api/auth';
+import { login, saveAuth } from '../api/auth';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -23,8 +23,13 @@ export default function LoginPage() {
         password,
       });
 
-      saveToken(result.accessToken);
-      navigate('/');
+      saveAuth(result);
+
+      if (result.user.role === 'ADMIN') {
+        navigate('/admin/payments');
+      } else {
+        navigate('/');
+      }
     } catch {
       setError('Invalid phone number or password');
     } finally {
@@ -33,47 +38,74 @@ export default function LoginPage() {
   }
 
   return (
-    <main>
-      <Link to="/">← Back to Phoenix</Link>
+    <main className="page-container auth-page">
+      <Link className="back-link" to="/">
+        ← Back to Phoenix
+      </Link>
 
-      <h1>Login</h1>
+      <section className="auth-card">
+        <span className="eyebrow">Welcome back</span>
 
-      <form onSubmit={handleSubmit}>
-        <label>
-          Phone number
-          <input
-            type="text"
-            value={phone}
-            onChange={(event) => setPhone(event.target.value)}
-            placeholder="0700000001"
-            required
-          />
-        </label>
+        <h1>Login</h1>
 
-        <br />
+        <p className="auth-description">
+          Access your Phoenix account and manage your raffle
+          entries.
+        </p>
 
-        <label>
-          Password
-          <input
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            required
-          />
-        </label>
+        <form
+          className="auth-form"
+          onSubmit={handleSubmit}
+        >
+          <label>
+            Phone number
 
-        <br />
+            <input
+              type="text"
+              value={phone}
+              onChange={(event) =>
+                setPhone(event.target.value)
+              }
+              placeholder="0700000001"
+              required
+            />
+          </label>
 
-        {error && <p>{error}</p>}
+          <label>
+            Password
 
-        <button type="submit" disabled={loading}>
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
-      </form>
+            <input
+              type="password"
+              value={password}
+              onChange={(event) =>
+                setPassword(event.target.value)
+              }
+              required
+            />
+          </label>
 
-      <p>
-        Don't have an account? <Link to="/register">Register</Link>
-      </p>
+          {error && (
+            <p className="form-error">
+              {error}
+            </p>
+          )}
+
+          <button
+            className="primary-button"
+            type="submit"
+            disabled={loading}
+          >
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
+
+        <p className="auth-footer">
+          Don't have an account?{' '}
+          <Link to="/register">
+            Register
+          </Link>
+        </p>
+      </section>
     </main>
   );
 }

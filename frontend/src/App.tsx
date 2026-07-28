@@ -7,6 +7,8 @@ import PaymentPage from './pages/PaymentPage';
 import MyTicketsPage from './pages/MyTicketsPage';
 import RegisterPage from './pages/RegisterPage';
 import AdminPaymentsPage from './pages/AdminPaymentsPage';
+import WinnersPage from './pages/WinnersPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
 
 function App() {
   return (
@@ -21,6 +23,11 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/payments/:id" element={<PaymentPage />} />
           <Route path="/my-tickets" element={<MyTicketsPage />} />
+          <Route path="/winners" element={<WinnersPage />} />
+          <Route
+  path="/admin/dashboard"
+  element={<AdminDashboardPage />}
+/>
 
           {/* Admin */}
           <Route

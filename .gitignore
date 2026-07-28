@@ -1,29 +1,23 @@
-# Node
-node_modules/
-npm-debug.log*
+node_modules
 
-# Environment variables
+dist
+
 .env
-.env.*
 
-# Logs
-logs/
+coverage
+
 *.log
 
-# Build output
-dist/
-build/
+*.backup
 
-# OS files
-.DS_Store
-Thumbs.db
-
-# VS Code
 .vscode/settings.json
 
-# Coverage
-coverage/
+frontend/node_modules
 
-# Temporary files
-*.tmp
-*.temp
+backend/node_modules
+
+frontend/dist
+
+backend/dist
+
+.prisma

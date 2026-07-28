@@ -6,19 +6,19 @@ import { api } from '../api/client';
 export default function PaymentPage() {
   const { id } = useParams<{ id: string }>();
 
-  const [transactionCode, setTransactionCode] = useState('');
+  const [paymentMessage, setPaymentMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [submitted, setSubmitted] = useState(false);
-  const [submittedCode, setSubmittedCode] = useState('');
+  const [submittedMessage, setSubmittedMessage] = useState('');
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
 
-    const code = transactionCode.trim();
+    const message = paymentMessage.trim();
 
-    if (!id || !code) {
-      setError('Please enter your M-Pesa transaction code');
+    if (!id || !message) {
+      setError('Please paste your M-Pesa confirmation message or transaction code.');
       return;
     }
 
@@ -27,13 +27,16 @@ export default function PaymentPage() {
       setError('');
 
       await api.post(`/payments/${id}/submit-code`, {
-        transactionCode: code,
+        transactionCode: message,
       });
 
-      setSubmittedCode(code);
+      setSubmittedMessage(message);
       setSubmitted(true);
-    } catch (err) {
-      setError('Failed to submit transaction code');
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message ||
+          'Failed to submit payment details.',
+      );
     } finally {
       setLoading(false);
     }
@@ -47,33 +50,37 @@ export default function PaymentPage() {
         </Link>
 
         <section className="auth-card">
-          <h1>🎉 Transaction Code Submitted</h1>
+          <h1>🎉 Payment Submitted</h1>
 
           <p>
-            Your transaction code has been submitted successfully and is now
-            awaiting verification.
+            Your payment details have been submitted successfully
+            and are awaiting manual verification.
           </p>
 
           <section>
             <h2>Payment Status</h2>
 
             <p>
-              <strong>Transaction Code:</strong> {submittedCode}
-            </p>
-
-            <p>
               <strong>Status:</strong> ⏳ Awaiting verification
             </p>
+
+            <div className="payment-message-preview">
+              <strong>Submitted payment details:</strong>
+
+              <p>
+                {submittedMessage}
+              </p>
+            </div>
           </section>
 
           <p>
-            Your ticket will be confirmed once an administrator verifies your
-            payment.
+            Your ticket will be confirmed once an administrator
+            verifies your payment.
           </p>
 
-          <Link to="/">
+          <Link to="/my-tickets">
             <button className="primary-button">
-              ← Back to Home
+              View My Ticket
             </button>
           </Link>
         </section>
@@ -88,34 +95,54 @@ export default function PaymentPage() {
       </Link>
 
       <section className="auth-card">
-        <h1>Submit Transaction Code</h1>
+        <h1>Submit Payment Details</h1>
 
         <p className="auth-description">
-          Enter the M-Pesa transaction code you received after making your
-          payment.
+          After making your M-Pesa payment, paste the full
+          confirmation message below. You may also enter only
+          the transaction code.
         </p>
 
-        <form className="auth-form" onSubmit={handleSubmit}>
-          <label htmlFor="transactionCode">
-            M-Pesa Transaction Code
-            <input
-              id="transactionCode"
-              type="text"
-              value={transactionCode}
-              onChange={(event) => setTransactionCode(event.target.value)}
-              placeholder="e.g. TST-FRONTEND-001"
+        <form
+          className="auth-form"
+          onSubmit={handleSubmit}
+        >
+          <label htmlFor="paymentMessage">
+            M-Pesa Confirmation Message or Transaction Code
+
+            <textarea
+              id="paymentMessage"
+              value={paymentMessage}
+              onChange={(event) =>
+                setPaymentMessage(event.target.value)
+              }
+              placeholder={
+                'Example:\n\nTK12345678 Confirmed. Ksh1,000.00 sent to Phoenix...'
+              }
+              rows={7}
               required
             />
           </label>
 
-          {error && <p className="form-error">{error}</p>}
+          <p className="form-help-text">
+            Paste the entire M-Pesa message if you have it.
+            This helps our admin verify your payment manually.
+          </p>
+
+          {error && (
+            <p className="form-error">
+              {error}
+            </p>
+          )}
 
           <button
             className="primary-button"
             type="submit"
             disabled={loading}
           >
-            {loading ? 'Submitting...' : 'Submit Transaction Code'}
+            {loading
+              ? 'Submitting...'
+              : 'Submit Payment Details'}
           </button>
         </form>
       </section>
